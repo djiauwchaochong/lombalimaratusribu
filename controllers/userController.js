@@ -1,6 +1,7 @@
 const { comparePassword, hashPassword } = require('../helpers/bc')
 const { createToken } = require('../helpers/jwt')
 const { User } = require('../models')
+const { Op } = require("sequelize");
 
 class UserController {
   static async login (req, res) {
@@ -116,6 +117,32 @@ class UserController {
       })
       res.status(200).json('Success Delete')
     } catch (error) {
+      res.status(500).json({
+        message: 'Internal Server Error'
+      })
+    }
+  }
+
+  static async getUser (req, res) {
+    try {
+      const { username } = req.query
+      if (username) {
+        const result = await User.findAll({
+          where: {
+            username: {
+              [Op.iLike]: `%${username}%`
+            }
+          }, attributes: { exclude: ['password'] }
+        })
+        res.status(200).json(result)
+      } else {
+        const result = await User.findAll({
+          attributes: { exclude: ['password'] }
+        })
+        res.status(200).json(result)
+      }
+    } catch (error) {
+      console.log(error);
       res.status(500).json({
         message: 'Internal Server Error'
       })

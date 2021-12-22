@@ -18,6 +18,7 @@ app.use(auth)
 app.post('/user', UserController.createUser)
 app.patch('/user', UserController.editUser)
 app.delete('/user', UserController.deleteUser)
+app.get('/user', UserController.getUser)
 
 app.listen(port, () => {
   console.log(`Server is running`);
