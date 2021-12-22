@@ -11,22 +11,22 @@ class UserController {
           username
         }
       })
-      if (findUser && findUser.is_deleted === false && findUser.is_actived === true) {
-        const validPass = comparePassword(password, findUser.password)
-        if (validPass) {
-          const payload = {
-            username: findUser.username
-          }
-          const token = createToken(payload)
-          res.status(200).json({
-            aksesToken: token
-          })
-        } else {
-          throw new error
-        }
-      } else {
+      if (!findUser || (findUser.is_deleted === true && findUser.is_actived === false)) {
         throw new error
       }
+      
+      const validPass = comparePassword(password, findUser.password)
+      if (!validPass) {
+        throw new error
+      }
+
+      const payload = {
+        username: findUser.username
+      }
+      const token = createToken(payload)
+      res.status(200).json({
+        aksesToken: token
+      })
     } catch (error) {
       res.status(500).json({
         message: 'Internal Server Error'
@@ -64,26 +64,24 @@ class UserController {
           username: req.userLogin
         }
       })
-      if (foundUser) {
-        const checkPassword = comparePassword(oldPassword, foundUser.password)
-        if (checkPassword) {
-          console.log(checkPassword);
-          await User.update({
-            password: hashPassword(newPassword),
-            changed_date: new Date().toString(),
-            changed_by: req.userLogin
-          } ,{
-            where: {
-              username: foundUser.username
-            }
-          })
-          res.status(200).json('Success Edit')
-        } else {
-          throw new error
-        }
-      } else {
+      if (!foundUser) {
         throw new error
       }
+      const checkPassword = comparePassword(oldPassword, foundUser.password)
+      if (!checkPassword) {
+        throw new error
+      }
+      console.log(checkPassword);
+      await User.update({
+          password: hashPassword(newPassword),
+          changed_date: new Date().toString(),
+          changed_by: req.userLogin
+        } ,{
+          where: {
+            username: foundUser.username
+          }
+        })
+      res.status(200).json('Success Edit')
     } catch (error) {
       res.status(500).json({
         message: 'Internal Server Error'
@@ -103,21 +101,20 @@ class UserController {
           username
         }
       })
-      if (foundUser) {
-        await User.update({
-          is_deleted: true,
-          is_actived: false,
-          deleted_by: req.userLogin,
-          deleted_date: new Date().toString()
-        } ,{
-          where: {
-            username
-          }
-        })
-        res.status(200).json('Success Delete')
-      } else {
+      if (!foundUser) {
         throw new error
       }
+      await User.update({
+        is_deleted: true,
+        is_actived: false,
+        deleted_by: req.userLogin,
+        deleted_date: new Date().toString()
+      } ,{
+        where: {
+          username
+        }
+      })
+      res.status(200).json('Success Delete')
     } catch (error) {
       res.status(500).json({
         message: 'Internal Server Error'
