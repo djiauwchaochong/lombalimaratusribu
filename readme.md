@@ -1,0 +1,7 @@
+JANGAN LUPA
+sequelize db:create
+sequelize db:migrate
+sequelize db:seed:all
+
+username: 'john'
+password: 'john'
